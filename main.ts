@@ -1,6 +1,10 @@
 import { Application } from "@oak/oak";
+import { steamRouter } from "./routes/steam.ts";
 
 const app = new Application();
+
+app.use(steamRouter.routes());
+app.use(steamRouter.allowedMethods());
 
 app.use(async (ctx, next) => {
   try {
