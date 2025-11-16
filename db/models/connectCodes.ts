@@ -7,14 +7,14 @@ const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 export class ConnectCodesModel {
   constructor(private db: Database) {
     this.db.exec(`
-        CREATE TABLE IF NOT EXISTS connect_codes (
-            code TEXT PRIMARY KEY,
-            ip TEXT NOT NULL,
-            port INTEGER NOT NULL,
-            password TEXT,
-            message_link TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
+      CREATE TABLE IF NOT EXISTS connect_codes (
+        code TEXT PRIMARY KEY,
+        ip TEXT NOT NULL,
+        port INTEGER NOT NULL,
+        password TEXT,
+        message_link TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
     `);
   }
 

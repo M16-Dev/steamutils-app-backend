@@ -1,9 +1,9 @@
 import { Router } from "@oak/oak";
 import { db } from "../db/service.ts";
 
-export const steamRouter = new Router();
+export const connectRouter = new Router({ prefix: "/connect" });
 
-steamRouter.get("/connect/:code", (ctx) => {
+connectRouter.get("/:code", (ctx) => {
   const code = ctx.params.code;
   if (!code.match(/^[A-Z]{8}$/)) {
     ctx.response.status = 400;
