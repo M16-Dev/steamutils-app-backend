@@ -1,18 +1,16 @@
 import { Router } from "@oak/oak";
 import { db } from "../db/service.ts";
+import { z } from "zod";
+import { validateRouteParams } from "../middleware/validate.ts";
 
 export const connectRouter = new Router({ prefix: "/connect" });
 
-connectRouter.get("/:code", (ctx) => {
-  const code = ctx.params.code;
-  if (!code.match(/^[A-Z]{8}$/)) {
-    ctx.response.status = 400;
-    ctx.response.body = {
-      success: false,
-      error: "Invalid server code",
-    };
-    return;
-  }
+const CodeParamSchema = z.object({
+  code: z.string().toUpperCase().regex(/^[A-Z]{8}$/),
+});
+
+connectRouter.get("/:code", validateRouteParams(CodeParamSchema), (ctx) => {
+  const { code } = ctx.state.routeParams;
 
   const server = db.connectCodes.getServerByCode(code);
   if (!server) {
@@ -25,6 +23,6 @@ connectRouter.get("/:code", (ctx) => {
   }
 
   ctx.response.redirect(
-    `steam://connect/${server.ip}:${server.port}/${server.password ?? ""}`
+    `steam://connect/${server.ip}:${server.port}/${server.password ?? ""}`,
   );
 });
