@@ -9,7 +9,6 @@ export interface ConnectCodeRow {
   ip: string;
   port: number;
   password?: string | null;
-  message_link: string;
   created_at: string;
 }
 
