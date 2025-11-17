@@ -57,7 +57,13 @@ export class ConnectCodesModel {
 
   create(ip: string, port: number, password?: string): string {
     const code = this.getCodeByServer(ip, port);
-    if (code) return code;
+    if (code) {
+      const updateStmt = this.db.prepare(
+        "UPDATE connect_codes SET password = ? WHERE code = ?",
+      );
+      updateStmt.run(password ?? null, code);
+      return code;
+    }
 
     const newCode = nanoid();
     const insertStmt = this.db.prepare(
