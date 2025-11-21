@@ -15,10 +15,7 @@ connectRouter.get("/:code", validateRouteParams(CodeParamSchema), (ctx) => {
   const server = db.connectCodes.getServerByCode(code);
   if (!server) {
     ctx.response.status = 404;
-    ctx.response.body = {
-      success: false,
-      error: "Server not found",
-    };
+    ctx.response.body = { error: "Server not found" };
     return;
   }
 

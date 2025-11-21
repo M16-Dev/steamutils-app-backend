@@ -17,10 +17,7 @@ codesRouter.post("/", validate(CreateCodeSchema), (ctx) => {
   const code = db.connectCodes.create(ip, port, password);
 
   ctx.response.status = 201;
-  ctx.response.body = {
-    success: true,
-    data: { code },
-  };
+  ctx.response.body = { code };
 });
 
 const CodeSchema = z.object({
@@ -33,18 +30,12 @@ codesRouter.get("/:code", validateRouteParams(CodeSchema), (ctx) => {
   const server = db.connectCodes.getServerByCode(code);
   if (!server) {
     ctx.response.status = 404;
-    ctx.response.body = {
-      success: false,
-      error: "Code not found",
-    };
+    ctx.response.body = { error: "Code not found" };
     return;
   }
 
   ctx.response.status = 200;
-  ctx.response.body = {
-    success: true,
-    data: server,
-  };
+  ctx.response.body = { data: server };
 });
 
 
@@ -55,16 +46,10 @@ codesRouter.delete("/:code", validateRouteParams(CodeSchema), (ctx) => {
 
   if (!success) {
     ctx.response.status = 404;
-    ctx.response.body = {
-      success: false,
-      error: "Code not found",
-    };
+    ctx.response.body = { error: "Code not found" };
     return;
   }
 
   ctx.response.status = 201;
-  ctx.response.body = {
-    success: true,
-    data: { code },
-  };
+  ctx.response.body = { code };
 });
