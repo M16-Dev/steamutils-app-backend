@@ -1,10 +1,13 @@
 import { Application } from "@oak/oak";
 import { connectRouter } from "./routes/connect.ts";
+import { codesRouter } from "./routes/codes.ts";
 
 const app = new Application();
 
 app.use(connectRouter.routes());
 app.use(connectRouter.allowedMethods());
+app.use(codesRouter.routes());
+app.use(codesRouter.allowedMethods());
 
 app.use(async (ctx, next) => {
   try {
