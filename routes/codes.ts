@@ -4,6 +4,8 @@ import { z } from "zod";
 import { validate, validateRouteParams } from "../middleware/validate.ts";
 import { requireToken } from "../middleware/auth.ts";
 
+import config from "../config.json" with { type: "json" };
+
 export const codesRouter = new Router({ prefix: "/codes" });
 codesRouter.use(requireToken);
 
@@ -16,6 +18,14 @@ const CreateCodeSchema = z.object({
 
 codesRouter.post("/", validate(CreateCodeSchema), (ctx) => {
   const { guildId, ip, port, password } = ctx.state.validated;
+
+  const existingCodes = db.serverCodes.getGuildCodes(guildId)
+  
+  if (existingCodes.length >= config.plans.free.maxCodesPerGuild) {
+    ctx.response.status = 402;
+    ctx.response.body = { error: "Free codes limit reached for this guild" };
+    return;
+  }
 
   const code = db.serverCodes.create(guildId, ip, port, password);
 

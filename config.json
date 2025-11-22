@@ -1,0 +1,7 @@
+{
+    "plans": {
+        "free": {
+            "maxCodesPerGuild": 1
+        }
+    }
+}
