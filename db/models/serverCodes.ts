@@ -59,13 +59,26 @@ export class ServerCodesModel {
     return codes;
   }
 
+  getGuildCodesCount(guildId: string): number {
+    const stmt = this.db.prepare(
+      "SELECT COUNT(*) as count FROM server_codes WHERE guild_id = ?",
+    );
+    const res = stmt.value<[number]>(guildId);
+    return res ? res[0] : 0;
+  }
+
+  updatePassword(code: string, password?: string): boolean {
+    const stmt = this.db.prepare(
+      "UPDATE server_codes SET password = ? WHERE code = ?",
+    );
+    stmt.run(password ?? null, code);
+    return this.db.changes > 0;
+  }
+
   create(guildId: string, ip: string, port: number, password?: string): string {
     const code = this.getCodeByServer(guildId, ip, port);
     if (code) {
-      const updateStmt = this.db.prepare(
-        "UPDATE server_codes SET password = ? WHERE code = ?",
-      );
-      updateStmt.run(password ?? null, code);
+      this.updatePassword(code, password);
       return code;
     }
 
