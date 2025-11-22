@@ -16,7 +16,7 @@ const CreateCodeSchema = z.object({
 codesRouter.post("/", validate(CreateCodeSchema), (ctx) => {
   const { ip, port, password } = ctx.state.validated;
 
-  const code = db.connectCodes.create(ip, port, password);
+  const code = db.serverCodes.create(ip, port, password);
 
   ctx.response.status = 201;
   ctx.response.body = { code };
@@ -29,7 +29,7 @@ const CodeSchema = z.object({
 codesRouter.get("/:code", validateRouteParams(CodeSchema), (ctx) => {
   const { code } = ctx.state.routeParams;
 
-  const server = db.connectCodes.getServerByCode(code);
+  const server = db.serverCodes.getServerByCode(code);
   if (!server) {
     ctx.response.status = 404;
     ctx.response.body = { error: "Code not found" };
@@ -44,7 +44,7 @@ codesRouter.get("/:code", validateRouteParams(CodeSchema), (ctx) => {
 codesRouter.delete("/:code", validateRouteParams(CodeSchema), (ctx) => {
   const { code } = ctx.state.routeParams;
 
-  const success = db.connectCodes.delete(code);
+  const success = db.serverCodes.delete(code);
 
   if (!success) {
     ctx.response.status = 404;

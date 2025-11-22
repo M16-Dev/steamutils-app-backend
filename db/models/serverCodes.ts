@@ -1,36 +1,36 @@
 import type { Database } from "@db/sqlite";
-import type { ConnectCodeRow, Server } from "../types.ts";
+import type { Server } from "../types.ts";
 import { customAlphabet } from "@sitnik/nanoid";
 
 const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
-export class ConnectCodesModel {
+export class ServerCodesModel {
   constructor(private db: Database) {
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS connect_codes (
+      CREATE TABLE IF NOT EXISTS server_codes (
         code TEXT PRIMARY KEY,
         ip TEXT NOT NULL,
         port INTEGER NOT NULL,
         password TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(ip, port)
+        UNIQUE(ip, port, guild_id)
       )
     `);
 
     this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_connect_codes_server 
-      ON connect_codes(ip, port)
+      CREATE INDEX IF NOT EXISTS idx_server_codes_server 
+      ON server_codes(ip, port)
     `);
   }
 
   seedData() {
-    const stmt = this.db.prepare("SELECT COUNT(*) as count FROM connect_codes");
+    const stmt = this.db.prepare("SELECT COUNT(*) as count FROM server_codes");
     const res = stmt.value<[number]>();
     const [count] = res ?? [0];
 
     if (count === 0) {
       this.db.exec(
-        `INSERT INTO connect_codes (code, ip, port, password) VALUES 
+        `INSERT INTO server_codes (code, ip, port, password) VALUES 
          ('AAAAAAAA', '192.168.0.1', 27015, NULL),
          ('BBBBBBBB', '192.168.0.2', 27016, 'xddos'),
          ('CCCCCCCC', '192.168.0.1', 27015, NULL)`,
@@ -41,7 +41,7 @@ export class ConnectCodesModel {
 
   getServerByCode(code: string): Server | null {
     const stmt = this.db.prepare(
-      "SELECT ip, port, password FROM connect_codes WHERE code = ?",
+      "SELECT ip, port, password FROM server_codes WHERE code = ?",
     );
     const res = stmt.get<Server>(code);
     return res ?? null;
@@ -49,7 +49,7 @@ export class ConnectCodesModel {
 
   getCodeByServer(ip: string, port: number): string | null {
     const stmt = this.db.prepare(
-      "SELECT code FROM connect_codes WHERE ip = ? AND port = ?",
+      "SELECT code FROM server_codes WHERE ip = ? AND port = ?",
     );
     const res = stmt.value<[string]>(ip, port);
     return res?.[0] ?? null;
@@ -59,7 +59,7 @@ export class ConnectCodesModel {
     const code = this.getCodeByServer(ip, port);
     if (code) {
       const updateStmt = this.db.prepare(
-        "UPDATE connect_codes SET password = ? WHERE code = ?",
+        "UPDATE server_codes SET password = ? WHERE code = ?",
       );
       updateStmt.run(password ?? null, code);
       return code;
@@ -67,7 +67,7 @@ export class ConnectCodesModel {
 
     const newCode = nanoid();
     const insertStmt = this.db.prepare(
-      "INSERT INTO connect_codes (code, ip, port, password) VALUES (?, ?, ?, ?)",
+      "INSERT INTO server_codes (code, ip, port, password) VALUES (?, ?, ?, ?)",
     );
 
     try {
@@ -79,7 +79,7 @@ export class ConnectCodesModel {
   }
 
   delete(code: string): boolean {
-    const stmt = this.db.prepare("DELETE FROM connect_codes WHERE code = ?");
+    const stmt = this.db.prepare("DELETE FROM server_codes WHERE code = ?");
     stmt.run(code);
     return this.db.changes > 0;
   }

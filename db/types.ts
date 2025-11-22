@@ -4,7 +4,7 @@ export interface Server {
   password?: string | null;
 }
 
-export interface ConnectCodeRow {
+export interface serverCodeRow {
   code: string;
   ip: string;
   port: number;

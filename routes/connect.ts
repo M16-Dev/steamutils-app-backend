@@ -12,7 +12,7 @@ const CodeParamSchema = z.object({
 connectRouter.get("/:code", validateRouteParams(CodeParamSchema), (ctx) => {
   const { code } = ctx.state.routeParams;
 
-  const server = db.connectCodes.getServerByCode(code);
+  const server = db.serverCodes.getServerByCode(code);
   if (!server) {
     ctx.response.status = 404;
     ctx.response.body = { error: "Server not found" };
