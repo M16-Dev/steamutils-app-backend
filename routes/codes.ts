@@ -8,15 +8,16 @@ export const codesRouter = new Router({ prefix: "/codes" });
 codesRouter.use(requireToken);
 
 const CreateCodeSchema = z.object({
+  guildId: z.string(),
   ip: z.string().ip(),
   port: z.number().int().positive().max(65535),
   password: z.string().min(1).max(50).optional(),
 });
 
 codesRouter.post("/", validate(CreateCodeSchema), (ctx) => {
-  const { ip, port, password } = ctx.state.validated;
+  const { guildId, ip, port, password } = ctx.state.validated;
 
-  const code = db.serverCodes.create(ip, port, password);
+  const code = db.serverCodes.create(guildId, ip, port, password);
 
   ctx.response.status = 201;
   ctx.response.body = { code };

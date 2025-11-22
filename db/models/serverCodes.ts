@@ -9,17 +9,13 @@ export class ServerCodesModel {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS server_codes (
         code TEXT PRIMARY KEY,
+        guild_id TEXT NOT NULL,
         ip TEXT NOT NULL,
         port INTEGER NOT NULL,
         password TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(ip, port, guild_id)
+        UNIQUE(guild_id, ip, port)
       )
-    `);
-
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_server_codes_server 
-      ON server_codes(ip, port)
     `);
   }
 
@@ -30,10 +26,10 @@ export class ServerCodesModel {
 
     if (count === 0) {
       this.db.exec(
-        `INSERT INTO server_codes (code, ip, port, password) VALUES 
-         ('AAAAAAAA', '192.168.0.1', 27015, NULL),
-         ('BBBBBBBB', '192.168.0.2', 27016, 'xddos'),
-         ('CCCCCCCC', '192.168.0.1', 27015, NULL)`,
+        `INSERT INTO server_codes (code, guild_id, ip, port, password) VALUES 
+         ('AAAAAAAA', '1234', '192.168.0.1', 27015, NULL),
+         ('BBBBBBBB', '4312', '192.168.0.2', 27016, 'xddos'),
+         ('CCCCCCCC', '5476', '192.168.0.1', 27015, NULL)`,
       );
       console.log("✅ Connect codes seeded");
     }
@@ -47,16 +43,24 @@ export class ServerCodesModel {
     return res ?? null;
   }
 
-  getCodeByServer(ip: string, port: number): string | null {
+  getCodeByServer(guildId: string, ip: string, port: number): string | null {
     const stmt = this.db.prepare(
-      "SELECT code FROM server_codes WHERE ip = ? AND port = ?",
+      "SELECT code FROM server_codes WHERE guild_id = ? AND ip = ? AND port = ?",
     );
-    const res = stmt.value<[string]>(ip, port);
+    const res = stmt.value<[string]>(guildId, ip, port);
     return res?.[0] ?? null;
   }
 
-  create(ip: string, port: number, password?: string): string {
-    const code = this.getCodeByServer(ip, port);
+  getGuildCodes(guildId: string): string[] {
+    const stmt = this.db.prepare(
+      "SELECT code FROM server_codes WHERE guild_id = ?",
+    );
+    const codes = stmt.values<[string]>(guildId).map(row => row[0]);
+    return codes;
+  }
+
+  create(guildId: string, ip: string, port: number, password?: string): string {
+    const code = this.getCodeByServer(guildId, ip, port);
     if (code) {
       const updateStmt = this.db.prepare(
         "UPDATE server_codes SET password = ? WHERE code = ?",
@@ -67,11 +71,11 @@ export class ServerCodesModel {
 
     const newCode = nanoid();
     const insertStmt = this.db.prepare(
-      "INSERT INTO server_codes (code, ip, port, password) VALUES (?, ?, ?, ?)",
+      "INSERT INTO server_codes (code, guild_id, ip, port, password) VALUES (?, ?, ?, ?, ?)",
     );
 
     try {
-      insertStmt.run(newCode, ip, port, password ?? null);
+      insertStmt.run(newCode, guildId, ip, port, password ?? null);
       return newCode;
     } catch (_) {
       throw new Error("Failed to generate unique code.");
