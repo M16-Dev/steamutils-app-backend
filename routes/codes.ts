@@ -19,8 +19,8 @@ const CreateCodeSchema = z.object({
 codesRouter.post("/", validate(CreateCodeSchema), (ctx) => {
   const { guildId, ip, port, password } = ctx.state.validated;
 
-  const existingCodes = db.serverCodes.getGuildCodes(guildId)
-  
+  const existingCodes = db.serverCodes.getGuildCodes(guildId);
+
   if (existingCodes.length >= config.plans.free.maxCodesPerGuild) {
     ctx.response.status = 402;
     ctx.response.body = { error: "Free codes limit reached for this guild" };
@@ -50,7 +50,6 @@ codesRouter.get("/:code", validateRouteParams(CodeSchema), (ctx) => {
   ctx.response.status = 200;
   ctx.response.body = { data: server };
 });
-
 
 codesRouter.delete("/:code", validateRouteParams(CodeSchema), (ctx) => {
   const { code } = ctx.state.routeParams;

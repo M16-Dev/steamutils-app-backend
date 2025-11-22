@@ -12,4 +12,3 @@ export interface serverCodeRow {
   password?: string | null;
   created_at: string;
 }
-

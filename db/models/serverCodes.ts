@@ -55,7 +55,7 @@ export class ServerCodesModel {
     const stmt = this.db.prepare(
       "SELECT code FROM server_codes WHERE guild_id = ?",
     );
-    const codes = stmt.values<[string]>(guildId).map(row => row[0]);
+    const codes = stmt.values<[string]>(guildId).map((row) => row[0]);
     return codes;
   }
 
