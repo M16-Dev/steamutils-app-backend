@@ -1,6 +1,13 @@
 {
   "tasks": {
-    "dev": "deno run --allow-net --allow-env --allow-read --allow-write --allow-ffi --env --watch main.ts"
+    "dev": "deno run --allow-net --allow-env --allow-read --allow-write --allow-ffi --env --watch main.ts",
+    "start": "deno run --allow-net --allow-env --allow-read --allow-write --allow-ffi --env main.ts",
+    "format": "deno fmt",
+    "format:check": "deno fmt --check",
+    "lint": "deno lint",
+    "test": "deno test --allow-net --allow-env --allow-read --allow-write --allow-ffi --env",
+    "check": "deno task format:check && deno task lint && deno task test",
+    "install-hooks": "deno run --allow-read --allow-write scripts/install-hooks.ts"
   },
   "imports": {
     "@sitnik/nanoid": "jsr:@sitnik/nanoid@^5.1.5",
