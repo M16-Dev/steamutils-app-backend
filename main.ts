@@ -23,6 +23,9 @@ app.use(async (ctx, next) => {
 });
 
 const portEnv = Deno.env.get("PORT");
+if (!portEnv) {
+  console.warn("⚠️ PORT environment variable is not set. Using default port 8000.");
+}
 const PORT = portEnv ? parseInt(portEnv) : 8000;
 
 console.log(`🚀 Server running on http://localhost:${PORT}`);

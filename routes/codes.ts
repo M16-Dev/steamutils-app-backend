@@ -2,8 +2,10 @@ import { Router } from "@oak/oak";
 import { db } from "../db/service.ts";
 import { z } from "zod";
 import { validate, validateRouteParams } from "../middleware/validate.ts";
+import { requireToken } from "../middleware/auth.ts";
 
 export const codesRouter = new Router({ prefix: "/codes" });
+codesRouter.use(requireToken);
 
 const CreateCodeSchema = z.object({
   ip: z.string().ip(),
