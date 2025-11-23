@@ -71,8 +71,8 @@ export class ServerCodesModel {
     const stmt = this.db.prepare(
       "UPDATE server_codes SET password = ? WHERE code = ?",
     );
-    stmt.run(password ?? null, code);
-    return this.db.changes > 0;
+    const changes = stmt.run(password ?? null, code);
+    return changes > 0;
   }
 
   create(guildId: string, ip: string, port: number, password?: string): string {
@@ -97,7 +97,7 @@ export class ServerCodesModel {
 
   delete(code: string): boolean {
     const stmt = this.db.prepare("DELETE FROM server_codes WHERE code = ?");
-    stmt.run(code);
-    return this.db.changes > 0;
+    const changes = stmt.run(code);
+    return changes > 0;
   }
 }

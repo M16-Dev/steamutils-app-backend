@@ -6,7 +6,7 @@ export interface Server {
 
 export interface serverCodeRow {
   code: string;
-  guildId: string;
+  guild_id: string;
   ip: string;
   port: number;
   password?: string | null;
