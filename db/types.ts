@@ -12,3 +12,9 @@ export interface serverCodeRow {
   password?: string | null;
   created_at: string;
 }
+
+export interface accountConnectionRow {
+  discord_id: string;
+  steam_id: string;
+  guild_id: string;
+}
