@@ -4,7 +4,7 @@ import { z } from "zod";
 import { validate, validateRouteParams } from "../middleware/validate.ts";
 import { requireToken } from "../middleware/auth.ts";
 
-import config from "../config.json" with { type: "json" };
+import { config } from "../config.ts";
 
 export const codesRouter = new Router({ prefix: "/codes" });
 codesRouter.use(requireToken);
