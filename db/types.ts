@@ -17,4 +17,5 @@ export interface LinkedAccountRow {
   discord_id: string;
   steam_id: string;
   guild_id: string;
+  created_at: string;
 }

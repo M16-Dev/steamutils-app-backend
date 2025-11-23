@@ -7,6 +7,7 @@ export class LinkedAccountsModel {
       discord_id TEXT NOT NULL,
       steam_id TEXT NOT NULL,
       guild_id TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (discord_id, guild_id)
     )`);
 
@@ -58,7 +59,7 @@ export class LinkedAccountsModel {
 
   getConnectionsByDiscordId(discordId: string): LinkedAccountRow[] {
     const stmt = this.db.prepare(
-      "SELECT discord_id, steam_id, guild_id FROM linked_accounts WHERE discord_id = ?",
+      "SELECT discord_id, steam_id, guild_id, created_at FROM linked_accounts WHERE discord_id = ?",
     );
     return stmt.all<LinkedAccountRow>(discordId);
   }
