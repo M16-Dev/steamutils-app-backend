@@ -1,4 +1,4 @@
-import { testing } from "@oak/oak";
+import { isHttpError, testing } from "@oak/oak";
 import { assertEquals } from "@std/assert";
 import { spy } from "@std/testing/mock";
 
@@ -24,11 +24,18 @@ Deno.test("requireToken - blocks request with invalid key", async () => {
   });
   const next = spy(testing.createMockNext());
 
-  await requireToken(ctx, next);
+  let thrown: unknown = null;
+  try {
+    await requireToken(ctx, next);
+  } catch (err) {
+    thrown = err;
+  }
 
   assertEquals(next.calls.length, 0);
-  assertEquals(ctx.response.status, 401);
-  assertEquals(ctx.response.body, { error: "Unauthorized: Invalid or missing API Key" });
+  if (!thrown || !isHttpError(thrown)) throw new Error("Expected requireToken to throw an HttpError");
+  const errObj = thrown as { status?: number; message?: string };
+  assertEquals(errObj.status, 401);
+  assertEquals(errObj.message, "Unauthorized: Invalid or missing API Key");
 });
 
 Deno.test("requireToken - blocks request with missing header", async () => {
@@ -37,8 +44,15 @@ Deno.test("requireToken - blocks request with missing header", async () => {
   });
   const next = spy(testing.createMockNext());
 
-  await requireToken(ctx, next);
+  let thrown: unknown = null;
+  try {
+    await requireToken(ctx, next);
+  } catch (err) {
+    thrown = err;
+  }
 
   assertEquals(next.calls.length, 0);
-  assertEquals(ctx.response.status, 401);
+  if (!thrown || !isHttpError(thrown)) throw new Error("Expected requireToken to throw an HttpError");
+  const errObj2 = thrown as { status?: number };
+  assertEquals(errObj2.status, 401);
 });

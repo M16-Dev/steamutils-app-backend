@@ -13,11 +13,7 @@ connectRouter.get("/:code", validateRouteParams(CodeParamSchema), (ctx) => {
   const { code } = ctx.state.routeParams;
 
   const server = db.serverCodes.getServerByCode(code);
-  if (!server) {
-    ctx.response.status = 404;
-    ctx.response.body = { error: "Server not found" };
-    return;
-  }
+  if (!server) return ctx.throw(404, "Server not found");
 
   ctx.response.redirect(
     `steam://connect/${server.ip}:${server.port}/${server.password ?? ""}`,

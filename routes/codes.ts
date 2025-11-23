@@ -28,9 +28,7 @@ codesRouter.post("/", validate(CreateCodeSchema), (ctx) => {
       return;
     }
 
-    ctx.response.status = 402;
-    ctx.response.body = { error: "Free codes limit reached for this guild" };
-    return;
+    ctx.throw(402, "Free codes limit reached for this guild");
   }
 
   const code = db.serverCodes.create(guildId, ip, port, password);
@@ -47,11 +45,8 @@ codesRouter.get("/:code", validateRouteParams(CodeSchema), (ctx) => {
   const { code } = ctx.state.routeParams;
 
   const server = db.serverCodes.getServerByCode(code);
-  if (!server) {
-    ctx.response.status = 404;
-    ctx.response.body = { error: "Code not found" };
-    return;
-  }
+
+  if (!server) ctx.throw(404, "Code not found");
 
   ctx.response.status = 200;
   ctx.response.body = { data: server };
@@ -62,11 +57,7 @@ codesRouter.delete("/:code", validateRouteParams(CodeSchema), (ctx) => {
 
   const success = db.serverCodes.delete(code);
 
-  if (!success) {
-    ctx.response.status = 404;
-    ctx.response.body = { error: "Code not found" };
-    return;
-  }
+  if (!success) ctx.throw(404, "Code not found");
 
   ctx.response.status = 201;
   ctx.response.body = { code };
