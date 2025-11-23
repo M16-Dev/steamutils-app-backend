@@ -4,7 +4,7 @@ export interface Server {
   password?: string | null;
 }
 
-export interface serverCodeRow {
+export interface ServerCodeRow {
   code: string;
   guild_id: string;
   ip: string;
@@ -13,7 +13,7 @@ export interface serverCodeRow {
   created_at: string;
 }
 
-export interface accountConnectionRow {
+export interface LinkedAccountRow {
   discord_id: string;
   steam_id: string;
   guild_id: string;

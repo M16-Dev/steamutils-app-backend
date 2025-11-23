@@ -1,13 +1,13 @@
 import { Database } from "@db/sqlite";
 import { ensureDir } from "@std/fs";
 import { ServerCodesModel } from "./models/serverCodes.ts";
-import { AccountConnectionsModel } from "./models/accountConnections.ts";
+import { LinkedAccountsModel } from "./models/linkedAccounts.ts";
 
 class DatabaseService {
   private db: Database;
 
   public serverCodes: ServerCodesModel;
-  public accountConnections: AccountConnectionsModel;
+  public linkedAccounts: LinkedAccountsModel;
 
   constructor(dbPath = "./data/steamutils.db") {
     const dir = dbPath.substring(0, dbPath.lastIndexOf("/"));
@@ -16,7 +16,7 @@ class DatabaseService {
     this.db = new Database(dbPath);
 
     this.serverCodes = new ServerCodesModel(this.db);
-    this.accountConnections = new AccountConnectionsModel(this.db);
+    this.linkedAccounts = new LinkedAccountsModel(this.db);
 
     this.seedData();
   }
