@@ -55,7 +55,7 @@ authRouter.get("/steam/callback", async (ctx) => {
 
   const { discordId, guildId } = parsed.data!;
 
-  const success = db.linkedAccounts.create(discordId, steamId as string, guildId);
+  const success = db.connections.create(discordId, steamId as string, guildId);
 
   if (!success) {
     ctx.throw(409, "Accounts already linked.");

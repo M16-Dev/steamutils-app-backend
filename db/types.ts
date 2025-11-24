@@ -13,7 +13,7 @@ export interface ServerCodeRow {
   created_at: string;
 }
 
-export interface LinkedAccountRow {
+export interface ConnectionRow {
   discord_id: string;
   steam_id: string;
   guild_id: string;
