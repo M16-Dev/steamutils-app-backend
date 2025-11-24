@@ -3,23 +3,25 @@ import { db } from "../db/service.ts";
 import { z } from "zod";
 import { verify } from "djwt";
 import { validateQuery } from "../middleware/validate.ts";
-import { steamAuth } from "../utils/steamAuth.ts";
+import { SteamAuth } from "../utils/steamAuth.ts";
 import { config } from "../config.ts";
 
 const key = await crypto.subtle.importKey(
-  "raw",
-  new TextEncoder().encode(config.jwtSecret),
-  { name: "HMAC", hash: "SHA-256" },
-  false,
+  "raw", 
+  new TextEncoder().encode(config.jwtSecret), 
+  { name: "HMAC", hash: "SHA-256" }, 
+  false, 
   ["verify"],
 );
 
-export const authRouter = new Router({ prefix: "/auth" });
+const steamAuth = new SteamAuth(`${config.appUrl}/connections/create/callback`, config.appUrl);
+
+export const connectionRouter = new Router({ prefix: "/connections" });
 
 const SteamAuthParamsSchema = z.object({
   token: z.string(),
 });
-authRouter.get("/steam", validateQuery(SteamAuthParamsSchema), (ctx) => {
+connectionRouter.get("/create", validateQuery(SteamAuthParamsSchema), (ctx) => {
   const { token } = ctx.state.query;
 
   if (!token) ctx.throw(400, "Missing token");
@@ -28,7 +30,7 @@ authRouter.get("/steam", validateQuery(SteamAuthParamsSchema), (ctx) => {
   ctx.response.redirect(redirectUrl);
 });
 
-authRouter.get("/steam/callback", async (ctx) => {
+connectionRouter.get("/create/callback", async (ctx) => {
   const steamId = await steamAuth.verify(ctx.request.url);
 
   if (!steamId) ctx.throw(401, "Authentication failed");

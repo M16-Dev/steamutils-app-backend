@@ -1,8 +1,6 @@
-import { config } from "../config.ts";
-
 const STEAM_OPENID_URL = "https://steamcommunity.com/openid/login";
 
-class SteamAuth {
+export class SteamAuth {
   private returnUrl: string;
   private realm: string;
 
@@ -64,8 +62,3 @@ class SteamAuth {
     return url.toString();
   }
 }
-
-export const steamAuth = new SteamAuth(
-  `${config.appUrl}/auth/steam/callback`,
-  config.appUrl,
-);
