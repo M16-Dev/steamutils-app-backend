@@ -9,11 +9,20 @@ export const rawConfig = {
   jwtSecret: Deno.env.get("JWT_SECRET") as string | undefined,
 };
 
+if (!rawConfig.plans.free) {
+  rawConfig.plans.free = { maxCodesPerGuild: 1 };
+}
+
+const PlanSchema = z.object({
+  maxCodesPerGuild: z.number().int().positive(),
+});
+
 const ConfigSchema = z.object({
   port: z.number().int().positive().max(65535),
   apiKey: z.string(),
   appUrl: z.string().url().regex(/^https?:\/\/.+/),
   jwtSecret: z.string(),
+  plans: z.record(PlanSchema),
 });
 
 const parsed = ConfigSchema.safeParse(rawConfig);
