@@ -5,11 +5,15 @@ export const rawConfig = {
   ...base,
   port: Number(Deno.env.get("PORT")) ?? 8000,
   apiKey: Deno.env.get("API_KEY") as string | undefined,
+  appUrl: Deno.env.get("APP_URL") as string | undefined,
+  jwtSecret: Deno.env.get("JWT_SECRET") as string | undefined,
 };
 
 const ConfigSchema = z.object({
   port: z.number().int().positive().max(65535),
   apiKey: z.string(),
+  appUrl: z.string().url().regex(/^https?:\/\/.+/),
+  jwtSecret: z.string(),
 });
 
 const parsed = ConfigSchema.safeParse(rawConfig);

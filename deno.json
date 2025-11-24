@@ -16,7 +16,8 @@
     "@oak/oak": "jsr:@oak/oak@17",
     "@db/sqlite": "jsr:@db/sqlite@0.12",
     "@std/fs": "jsr:@std/fs@^1.0.19",
-    "zod": "https://deno.land/x/zod@v3.23.8/mod.ts"
+    "zod": "https://deno.land/x/zod@v3.23.8/mod.ts",
+    "djwt": "https://deno.land/x/djwt@v3.0.1/mod.ts"
   },
   "fmt": {
     "lineWidth": 160,
