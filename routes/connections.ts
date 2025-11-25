@@ -2,9 +2,10 @@ import { Router } from "@oak/oak";
 import { db } from "../db/service.ts";
 import { z } from "zod";
 import { verify } from "djwt";
-import { validateQuery } from "../middleware/validate.ts";
+import { validateBody, validateQuery, validateRoute } from "../middleware/validate.ts";
 import { SteamAuth } from "../utils/steamAuth.ts";
 import { config } from "../config.ts";
+import { requireToken } from "../middleware/auth.ts";
 
 const key = await crypto.subtle.importKey(
   "raw",
@@ -65,4 +66,27 @@ connectionRouter.get("/create/callback", async (ctx) => {
 
   ctx.response.status = 200;
   ctx.response.body = { message: "Successfully linked!" };
+});
+
+const GetConnectionsRouteSchema = z.object({
+  discordId: z.string().regex(/^\d+$/),
+});
+connectionRouter.get("/:discordId", requireToken, validateRoute(GetConnectionsRouteSchema), (ctx) => {
+  const connections = db.connections.getAllByDiscordId(ctx.state.validatedRoute.discordId);
+  ctx.response.status = 200;
+  ctx.response.body = { connections };
+});
+
+const DeleteConnectionsBodySchema = z.object({
+  discordId: z.string().regex(/^\d+$/),
+  guildId: z.string().regex(/^\d+$/),
+});
+connectionRouter.delete("/", requireToken, validateBody(DeleteConnectionsBodySchema), (ctx) => {
+  const { discordId, guildId } = ctx.state.validatedBody;
+  const success = db.connections.delete(discordId, guildId);
+  if (!success) {
+    ctx.throw(404, "Connection not found.");
+  }
+  ctx.response.status = 200;
+  ctx.response.body = { message: "Connection removed successfully." };
 });
