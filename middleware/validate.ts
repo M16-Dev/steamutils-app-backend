@@ -1,11 +1,11 @@
 import { z } from "zod";
-import type { Context, Next } from "@oak/oak";
+import type { Context, Next, RouterContext } from "@oak/oak";
 
-export function validate<T extends z.ZodType>(schema: T) {
+export function validateBody<T extends z.ZodType>(schema: T) {
   return async (ctx: Context, next: Next) => {
     try {
       const body = await ctx.request.body.json();
-      ctx.state.validated = schema.parse(body);
+      ctx.state.validatedBody = schema.parse(body);
       await next();
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -29,7 +29,7 @@ export function validateQuery<T extends z.ZodType>(schema: T) {
   return async (ctx: Context, next: Next) => {
     try {
       const params = Object.fromEntries(ctx.request.url.searchParams);
-      ctx.state.query = schema.parse(params);
+      ctx.state.validatedQuery = schema.parse(params);
       await next();
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -49,12 +49,11 @@ export function validateQuery<T extends z.ZodType>(schema: T) {
   };
 }
 
-export function validateRouteParams<T extends z.ZodType>(schema: T) {
+export function validateRoute<T extends z.ZodType>(schema: T) {
   return async (ctx: Context, next: Next) => {
     try {
-      // deno-lint-ignore no-explicit-any
-      const params = (ctx as any).params ?? {};
-      ctx.state.routeParams = schema.parse(params);
+      const params = (ctx as RouterContext<string>).params;
+      ctx.state.validatedRoute = schema.parse(params);
       await next();
     } catch (error) {
       if (error instanceof z.ZodError) {

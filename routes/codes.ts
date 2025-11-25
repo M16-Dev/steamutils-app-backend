@@ -1,7 +1,7 @@
 import { Router } from "@oak/oak";
 import { db } from "../db/service.ts";
 import { z } from "zod";
-import { validate, validateRouteParams } from "../middleware/validate.ts";
+import { validateBody, validateRoute } from "../middleware/validate.ts";
 import { requireToken } from "../middleware/auth.ts";
 
 import { config } from "../config.ts";
@@ -16,8 +16,8 @@ const CreateCodeSchema = z.object({
   password: z.string().min(1).max(50).optional(),
 });
 
-codesRouter.post("/", validate(CreateCodeSchema), (ctx) => {
-  const { guildId, ip, port, password } = ctx.state.validated;
+codesRouter.post("/", validateBody(CreateCodeSchema), (ctx) => {
+  const { guildId, ip, port, password } = ctx.state.validatedBody;
 
   if (db.serverCodes.getGuildCodesCount(guildId) >= config.plans.free.maxCodesPerGuild) {
     const code = db.serverCodes.getCodeByServer(guildId, ip, port);
@@ -41,8 +41,8 @@ const CodeSchema = z.object({
   code: z.string().toUpperCase().regex(/^[A-Z]{8}$/),
 });
 
-codesRouter.get("/:code", validateRouteParams(CodeSchema), (ctx) => {
-  const { code } = ctx.state.routeParams;
+codesRouter.get("/:code", validateRoute(CodeSchema), (ctx) => {
+  const { code } = ctx.state.validatedRoute;
 
   const server = db.serverCodes.getServerByCode(code);
 
@@ -52,8 +52,8 @@ codesRouter.get("/:code", validateRouteParams(CodeSchema), (ctx) => {
   ctx.response.body = { data: server };
 });
 
-codesRouter.delete("/:code", validateRouteParams(CodeSchema), (ctx) => {
-  const { code } = ctx.state.routeParams;
+codesRouter.delete("/:code", validateRoute(CodeSchema), (ctx) => {
+  const { code } = ctx.state.validatedRoute;
 
   const success = db.serverCodes.delete(code);
 

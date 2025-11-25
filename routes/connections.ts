@@ -7,10 +7,10 @@ import { SteamAuth } from "../utils/steamAuth.ts";
 import { config } from "../config.ts";
 
 const key = await crypto.subtle.importKey(
-  "raw", 
-  new TextEncoder().encode(config.jwtSecret), 
-  { name: "HMAC", hash: "SHA-256" }, 
-  false, 
+  "raw",
+  new TextEncoder().encode(config.jwtSecret),
+  { name: "HMAC", hash: "SHA-256" },
+  false,
   ["verify"],
 );
 
@@ -22,7 +22,7 @@ const SteamAuthParamsSchema = z.object({
   token: z.string(),
 });
 connectionRouter.get("/create", validateQuery(SteamAuthParamsSchema), (ctx) => {
-  const { token } = ctx.state.query;
+  const { token } = ctx.state.validatedQuery;
 
   if (!token) ctx.throw(400, "Missing token");
 
