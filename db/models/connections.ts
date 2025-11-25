@@ -25,11 +25,11 @@ export class ConnectionsModel {
     return changes > 0;
   }
 
-  delete(discordId: string, steamId: string, guildId: string): boolean {
+  delete(discordId: string, guildId: string): boolean {
     const stmt = this.db.prepare(
-      "DELETE FROM connections WHERE discord_id = ? AND steam_id = ? AND guild_id = ?",
+      "DELETE FROM connections WHERE discord_id = ? AND guild_id = ?",
     );
-    const changes = stmt.run(discordId, steamId, guildId);
+    const changes = stmt.run(discordId, guildId);
     return changes > 0;
   }
 
@@ -57,7 +57,7 @@ export class ConnectionsModel {
     return changes > 0;
   }
 
-  getConnectionsByDiscordId(discordId: string): ConnectionRow[] {
+  getAllByDiscordId(discordId: string): ConnectionRow[] {
     const stmt = this.db.prepare(
       "SELECT discord_id, steam_id, guild_id, created_at FROM connections WHERE discord_id = ?",
     );
