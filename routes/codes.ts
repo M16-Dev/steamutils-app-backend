@@ -10,10 +10,10 @@ export const codesRouter = new Router({ prefix: "/codes" });
 codesRouter.use(requireToken);
 
 const CreateCodeSchema = z.object({
-  guildId: z.string(),
+  guildId: z.string().regex(/^[0-9]+$/),
   ip: z.string().ip(),
   port: z.number().int().positive().max(65535),
-  password: z.string().min(1).max(50).optional(),
+  password: z.string().min(1).max(50).nullable(),
 });
 
 codesRouter.post("/", validateBody(CreateCodeSchema), (ctx) => {
