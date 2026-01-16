@@ -62,3 +62,12 @@ codesRouter.delete("/:code", validateRoute(CodeSchema), (ctx) => {
   ctx.response.status = 201;
   ctx.response.body = { code };
 });
+
+codesRouter.get("/guild/:guildId", validateRoute(z.object({ guildId: z.string().regex(/^[0-9]+$/) })), (ctx) => {
+  const { guildId } = ctx.state.validatedRoute;
+
+  const codes = db.serverCodes.getAllByGuild(guildId);
+
+  ctx.response.status = 200;
+  ctx.response.body = { data: codes };
+});

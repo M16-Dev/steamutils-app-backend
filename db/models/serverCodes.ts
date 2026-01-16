@@ -51,11 +51,11 @@ export class ServerCodesModel {
     return res?.[0] ?? null;
   }
 
-  getGuildCodes(guildId: string): string[] {
+  getAllByGuild(guildId: string): { code: string; ip: string; port: number; password?: string }[] {
     const stmt = this.db.prepare(
-      "SELECT code FROM server_codes WHERE guild_id = ?",
+      "SELECT code, ip, port, password FROM server_codes WHERE guild_id = ?",
     );
-    const codes = stmt.values<[string]>(guildId).map((row) => row[0]);
+    const codes = stmt.all<{ code: string; ip: string; port: number; password?: string }>(guildId);
     return codes;
   }
 
