@@ -6,6 +6,8 @@ import { validateBody, validateQuery, validateRoute } from "../middleware/valida
 import { SteamAuth } from "../utils/steamAuth.ts";
 import { config } from "../config.ts";
 import { requireToken } from "../middleware/auth.ts";
+import { renderHtmlPage } from "../utils/templates.ts";
+import { htmlErrorHandler } from "../middleware/htmlError.ts";
 
 const key = await crypto.subtle.importKey(
   "raw",
@@ -31,7 +33,7 @@ connectionRouter.get("/create", validateQuery(SteamAuthParamsSchema), (ctx) => {
   ctx.response.redirect(redirectUrl);
 });
 
-connectionRouter.get("/create/callback", async (ctx) => {
+connectionRouter.get("/create/callback", htmlErrorHandler, async (ctx) => {
   const steamId = await steamAuth.verify(ctx.request.url);
 
   if (!steamId) ctx.throw(401, "Authentication failed");
@@ -74,7 +76,8 @@ connectionRouter.get("/create/callback", async (ctx) => {
   }).catch((err) => console.error("Failed to notify bot:", err));
 
   ctx.response.status = 200;
-  ctx.response.body = { message: "Successfully linked!" };
+  ctx.response.type = "html";
+  ctx.response.body = renderHtmlPage("Connected!", "Your Steam account has been successfully linked with Discord.");
 });
 
 const GetConnectionsRouteSchema = z.object({
