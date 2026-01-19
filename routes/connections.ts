@@ -64,6 +64,15 @@ connectionRouter.get("/create/callback", async (ctx) => {
     ctx.throw(409, "Accounts already linked.");
   }
 
+  fetch(`${config.botApiUrl}/api/internal/user-verified`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${config.botApiKey}`,
+    },
+    body: JSON.stringify({ guildId, discordId }),
+  }).catch((err) => console.error("Failed to notify bot:", err));
+
   ctx.response.status = 200;
   ctx.response.body = { message: "Successfully linked!" };
 });

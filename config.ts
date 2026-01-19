@@ -7,6 +7,8 @@ export const rawConfig = {
   apiKey: Deno.env.get("API_KEY") as string | undefined,
   appUrl: Deno.env.get("APP_URL") as string | undefined,
   jwtSecret: Deno.env.get("JWT_SECRET") as string | undefined,
+  botApiUrl: Deno.env.get("BOT_API_URL") as string | undefined,
+  botApiKey: Deno.env.get("BOT_API_KEY") as string | undefined,
 };
 
 if (!rawConfig.plans.free) {
@@ -23,6 +25,8 @@ const ConfigSchema = z.object({
   appUrl: z.string().url().regex(/^https?:\/\/.+/),
   jwtSecret: z.string(),
   plans: z.record(PlanSchema),
+  botApiUrl: z.string().url().regex(/^https?:\/\/.+/),
+  botApiKey: z.string().min(1),
 });
 
 const parsed = ConfigSchema.safeParse(rawConfig);
