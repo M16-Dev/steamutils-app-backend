@@ -1,20 +1,21 @@
-import { Application } from "@oak/oak";
-import { connectRouter } from "./routes/connect.ts";
-import { codesRouter } from "./routes/codes.ts";
-import { connectionRouter } from "./routes/connections.ts";
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+import { HTTPException } from "hono/http-exception";
 import { config } from "./config.ts";
-import { errorHandler } from "./middleware/error.ts";
 
-const app = new Application();
+const app = new Hono();
 
-app.use(errorHandler);
+app.use(logger());
 
-app.use(connectRouter.routes());
-app.use(connectRouter.allowedMethods());
-app.use(codesRouter.routes());
-app.use(codesRouter.allowedMethods());
-app.use(connectionRouter.routes());
-app.use(connectionRouter.allowedMethods());
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
 
-console.log(`🚀 Server running on ${config.appUrl}`);
-await app.listen({ port: config.port });
+  console.error("Internal Server Error:", err);
+  return c.json({ error: "Internal Server Error" }, 500);
+});
+
+app.get("/", (c) => c.text("Hello Hono!"));
+
+Deno.serve({ port: config.port }, app.fetch);
