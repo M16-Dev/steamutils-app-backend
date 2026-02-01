@@ -51,11 +51,11 @@ export class ServerCodesModel {
     return res?.[0] ?? null;
   }
 
-  getAllByGuild(guildId: string): { code: string; ip: string; port: number; password?: string }[] {
+  getAllByGuild(guildId: string): { code: string; ip: string; port: number; password: string | null }[] {
     const stmt = this.db.prepare(
       "SELECT code, ip, port, password FROM server_codes WHERE guild_id = ?",
     );
-    const codes = stmt.all<{ code: string; ip: string; port: number; password?: string }>(guildId);
+    const codes = stmt.all<{ code: string; ip: string; port: number; password: string | null }>(guildId);
     return codes;
   }
 
@@ -67,15 +67,15 @@ export class ServerCodesModel {
     return res ? res[0] : 0;
   }
 
-  updatePassword(code: string, password?: string): boolean {
+  updatePassword(code: string, password: string | null): boolean {
     const stmt = this.db.prepare(
       "UPDATE server_codes SET password = ? WHERE code = ?",
     );
-    const changes = stmt.run(password ?? null, code);
+    const changes = stmt.run(password, code);
     return changes > 0;
   }
 
-  create(guildId: string, ip: string, port: number, password?: string): string {
+  create(guildId: string, ip: string, port: number, password: string | null): string {
     const code = this.getCodeByServer(guildId, ip, port);
     if (code) {
       this.updatePassword(code, password);
@@ -88,7 +88,7 @@ export class ServerCodesModel {
     );
 
     try {
-      insertStmt.run(newCode, guildId, ip, port, password ?? null);
+      insertStmt.run(newCode, guildId, ip, port, password);
       return newCode;
     } catch (_) {
       throw new Error("Failed to generate unique code.");

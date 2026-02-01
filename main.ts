@@ -1,20 +1,29 @@
-import { Application } from "@oak/oak";
-import { connectRouter } from "./routes/connect.ts";
-import { codesRouter } from "./routes/codes.ts";
-import { connectionRouter } from "./routes/connections.ts";
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+import { HTTPException } from "hono/http-exception";
 import { config } from "./config.ts";
-import { errorHandler } from "./middleware/error.ts";
 
-const app = new Application();
+import codesRouter from "./routes/api/v1/codes.ts";
+import connectionsApiRouter from "./routes/api/v1/connections.ts";
+import connectRouter from "./routes/connect.ts";
+import connectionsRouter from "./routes/connections.ts";
 
-app.use(errorHandler);
+const app = new Hono();
 
-app.use(connectRouter.routes());
-app.use(connectRouter.allowedMethods());
-app.use(codesRouter.routes());
-app.use(codesRouter.allowedMethods());
-app.use(connectionRouter.routes());
-app.use(connectionRouter.allowedMethods());
+app.use(logger());
 
-console.log(`🚀 Server running on ${config.appUrl}`);
-await app.listen({ port: config.port });
+app.route("/api/v1/codes", codesRouter);
+app.route("/api/v1/connections", connectionsApiRouter);
+app.route("/connect", connectRouter);
+app.route("/connections", connectionsRouter);
+
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+
+  console.error("Internal Server Error:", err);
+  return c.json({ error: "Internal Server Error" }, 500);
+});
+
+Deno.serve({ port: config.port }, app.fetch);
