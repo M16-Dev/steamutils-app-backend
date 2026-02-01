@@ -18,7 +18,7 @@ const jwtKey = await crypto.subtle.importKey(
 );
 
 const steamAuth = new SteamAuth(
-  `${config.appUrl}/api/v1/connections/create/callback`,
+  `${config.appUrl}/connections/create/callback`,
   config.appUrl,
 );
 
