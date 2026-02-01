@@ -26,6 +26,4 @@ app.onError((err, c) => {
   return c.json({ error: "Internal Server Error" }, 500);
 });
 
-app.get("/", (c) => c.text("Hello Hono!"));
-
 Deno.serve({ port: config.port }, app.fetch);
