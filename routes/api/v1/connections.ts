@@ -33,7 +33,7 @@ app.delete("/", zValidator("json", DeleteConnectionsSchema), (c) => {
     return c.json({ error: "Connection not found." }, 404);
   }
 
-  return c.json({ message: "Connection removed successfully." }, 200);
+  return c.body(null, 204);
 });
 
 export default app;
