@@ -1,15 +1,15 @@
-import { Router } from "@oak/oak";
-import { db } from "../db/service.ts";
-import { z } from "zod";
-import { verify } from "djwt";
-import { validateBody, validateQuery, validateRoute } from "../middleware/validate.ts";
-import { SteamAuth } from "../utils/steamAuth.ts";
+import { Hono } from "hono";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "@zod/zod";
+import { verify } from "@wok/djwt";
 import { config } from "../config.ts";
-import { requireToken } from "../middleware/auth.ts";
+import { db } from "../db/service.ts";
+import { SteamAuth } from "../utils/steamAuth.ts";
 import { renderHtmlPage } from "../utils/templates.ts";
-import { htmlErrorHandler } from "../middleware/htmlError.ts";
 
-const key = await crypto.subtle.importKey(
+const app = new Hono();
+
+const jwtKey = await crypto.subtle.importKey(
   "raw",
   new TextEncoder().encode(config.jwtSecret),
   { name: "HMAC", hash: "SHA-256" },
@@ -17,36 +17,46 @@ const key = await crypto.subtle.importKey(
   ["verify"],
 );
 
-const steamAuth = new SteamAuth(`${config.appUrl}/connections/create/callback`, config.appUrl);
-
-export const connectionRouter = new Router({ prefix: "/connections" });
+const steamAuth = new SteamAuth(
+  `${config.appUrl}/api/v1/connections/create/callback`,
+  config.appUrl,
+);
 
 const SteamAuthParamsSchema = z.object({
   token: z.string(),
 });
-connectionRouter.get("/create", validateQuery(SteamAuthParamsSchema), (ctx) => {
-  const { token } = ctx.state.validatedQuery;
 
-  if (!token) ctx.throw(400, "Missing token");
-
+app.get("/create", zValidator("query", SteamAuthParamsSchema), (c) => {
+  const { token } = c.req.valid("query");
   const redirectUrl = steamAuth.getRedirectUrl({ token });
-  ctx.response.redirect(redirectUrl);
+  return c.redirect(redirectUrl);
 });
 
-connectionRouter.get("/create/callback", htmlErrorHandler, async (ctx) => {
-  const steamId = await steamAuth.verify(ctx.request.url);
+app.get("/create/callback", async (c) => {
+  const url = new URL(c.req.url);
 
-  if (!steamId) ctx.throw(401, "Authentication failed");
-
-  const { token } = steamAuth.getState(ctx.request.url);
-
-  if (!token) ctx.throw(400, "Missing token");
-
-  let payload = null;
+  let steamId: string | null;
   try {
-    payload = await verify(token, key);
+    steamId = await steamAuth.verify(url);
+  } catch (err) {
+    console.error("Steam verification error:", err);
+    return c.html(renderHtmlPage("Error", "Failed to verify Steam account", true), 502);
+  }
+
+  if (!steamId) {
+    return c.html(renderHtmlPage("Error", "Authentication failed", true), 401);
+  }
+
+  const { token } = steamAuth.getState(url);
+  if (!token) {
+    return c.html(renderHtmlPage("Error", "Missing return token", true), 400);
+  }
+
+  let payload;
+  try {
+    payload = await verify(token, jwtKey);
   } catch (_) {
-    ctx.throw(401, "Token expired/invalid");
+    return c.html(renderHtmlPage("Error", "Token expired or invalid", true), 401);
   }
 
   const TokenPayloadSchema = z.object({
@@ -55,15 +65,19 @@ connectionRouter.get("/create/callback", htmlErrorHandler, async (ctx) => {
   });
   const parsed = TokenPayloadSchema.safeParse(payload);
   if (!parsed.success) {
-    ctx.throw(400, "Token payload missing required fields: discordId or guildId");
+    return c.html(renderHtmlPage("Error", "Invalid token payload", true), 400);
   }
 
-  const { discordId, guildId } = parsed.data!;
+  const { discordId, guildId } = parsed.data;
 
-  const success = db.connections.create(discordId, steamId as string, guildId);
-
-  if (!success) {
-    ctx.throw(409, "Accounts already linked.");
+  try {
+    const success = db.connections.create(discordId, steamId, guildId);
+    if (!success) {
+      return c.html(renderHtmlPage("Error", "Accounts already linked.", true), 409);
+    }
+  } catch (err) {
+    console.error("Database error:", err);
+    return c.html(renderHtmlPage("Error", "Internal Database Error", true), 500);
   }
 
   fetch(`${config.botApiUrl}/api/internal/user-verified`, {
@@ -75,30 +89,12 @@ connectionRouter.get("/create/callback", htmlErrorHandler, async (ctx) => {
     body: JSON.stringify({ guildId, discordId }),
   }).catch((err) => console.error("Failed to notify bot:", err));
 
-  ctx.response.status = 200;
-  ctx.response.type = "html";
-  ctx.response.body = renderHtmlPage("Connected!", "Your Steam account has been successfully linked with Discord.");
+  return c.html(
+    renderHtmlPage(
+      "Connected!",
+      "Your Steam account has been successfully linked with Discord.",
+    ),
+  );
 });
 
-const GetConnectionsRouteSchema = z.object({
-  discordId: z.string().regex(/^\d+$/),
-});
-connectionRouter.get("/:discordId", requireToken, validateRoute(GetConnectionsRouteSchema), (ctx) => {
-  const connections = db.connections.getAllByDiscordId(ctx.state.validatedRoute.discordId);
-  ctx.response.status = 200;
-  ctx.response.body = { connections };
-});
-
-const DeleteConnectionsBodySchema = z.object({
-  discordId: z.string().regex(/^\d+$/),
-  guildId: z.string().regex(/^\d+$/),
-});
-connectionRouter.delete("/", requireToken, validateBody(DeleteConnectionsBodySchema), (ctx) => {
-  const { discordId, guildId } = ctx.state.validatedBody;
-  const success = db.connections.delete(discordId, guildId);
-  if (!success) {
-    ctx.throw(404, "Connection not found.");
-  }
-  ctx.response.status = 200;
-  ctx.response.body = { message: "Connection removed successfully." };
-});
+export default app;
