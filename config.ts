@@ -1,5 +1,5 @@
 import base from "./config.json" with { type: "json" };
-import { z } from "zod";
+import { z } from "@zod/zod";
 
 export const rawConfig = {
   ...base,
@@ -22,17 +22,17 @@ const PlanSchema = z.object({
 const ConfigSchema = z.object({
   port: z.number().int().positive().max(65535),
   apiKey: z.string(),
-  appUrl: z.string().url().regex(/^https?:\/\/.+/),
+  appUrl: z.url().regex(/^https?:\/\/.+/),
   jwtSecret: z.string(),
-  plans: z.record(PlanSchema),
-  botApiUrl: z.string().url().regex(/^https?:\/\/.+/),
+  plans: z.record(z.string(), PlanSchema),
+  botApiUrl: z.url().regex(/^https?:\/\/.+/),
   botApiKey: z.string().min(1),
 });
 
 const parsed = ConfigSchema.safeParse(rawConfig);
 if (!parsed.success) {
   console.error("❌ CRITICAL ERROR: Invalid or missing configuration:");
-  console.error(parsed.error.format());
+  console.error(z.prettifyError(parsed.error));
   Deno.exit(1);
 }
 
