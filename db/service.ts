@@ -1,5 +1,5 @@
 import { Database } from "@db/sqlite";
-import { ensureDir } from "@std/fs";
+import { ensureDirSync } from "@std/fs";
 import { ServerCodesModel } from "./models/serverCodes.ts";
 import { ConnectionsModel } from "./models/connections.ts";
 
@@ -11,7 +11,7 @@ class DatabaseService {
 
   constructor(dbPath = "./data/steamutils.db") {
     const dir = dbPath.substring(0, dbPath.lastIndexOf("/"));
-    ensureDir(dir);
+    ensureDirSync(dir);
 
     this.db = new Database(dbPath);
 
