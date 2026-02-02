@@ -12,10 +12,13 @@ const app = new Hono();
 
 app.use(logger());
 
-app.route("/api/v1/codes", codesRouter);
-app.route("/api/v1/connections", connectionsApiRouter);
-app.route("/connect", connectRouter);
-app.route("/connections", connectionsRouter);
+const routes = app
+  .route("/api/v1/codes", codesRouter)
+  .route("/api/v1/connections", connectionsApiRouter)
+  .route("/connect", connectRouter)
+  .route("/connections", connectionsRouter);
+
+export type AppType = typeof routes;
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
