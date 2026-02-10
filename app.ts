@@ -5,6 +5,7 @@ import { HTTPException } from "hono/http-exception";
 import codesRouter from "./routes/api/v1/codes.ts";
 import connectionsApiRouter from "./routes/api/v1/connections.ts";
 import tokensRouter from "./routes/api/v1/tokens.ts";
+import verifiedRouter from "./routes/api/v1/verified.ts";
 import connectRouter from "./routes/connect.ts";
 import connectionsRouter from "./routes/connections.ts";
 
@@ -16,6 +17,7 @@ const routes = app
   .route("/api/v1/codes", codesRouter)
   .route("/api/v1/connections", connectionsApiRouter)
   .route("/api/v1/tokens", tokensRouter)
+  .route("/api/v1/verified", verifiedRouter)
   .route("/connect", connectRouter)
   .route("/connections", connectionsRouter);
 
