@@ -16,6 +16,5 @@ export interface ServerCodeRow {
 export interface ConnectionRow {
   discord_id: string;
   steam_id: string;
-  guild_id: string;
   created_at: string;
 }

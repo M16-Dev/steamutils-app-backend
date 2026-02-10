@@ -7,6 +7,7 @@ export class ConnectionsModel {
       discord_id TEXT NOT NULL,
       steam_id TEXT NOT NULL,
       guild_id TEXT NOT NULL,
+      fetched BOOLEAN DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (discord_id, guild_id)
     )`);
@@ -15,6 +16,11 @@ export class ConnectionsModel {
       CREATE UNIQUE INDEX IF NOT EXISTS idx_connections_steam_guild 
       ON connections(steam_id, guild_id)
     `);
+
+    // migration
+    try {
+      this.db.exec("ALTER TABLE connections ADD COLUMN fetched BOOLEAN DEFAULT 0");
+    } catch { /* Column exists */ }
   }
 
   create(discordId: string, steamId: string, guildId: string): boolean {
@@ -23,6 +29,20 @@ export class ConnectionsModel {
     );
     const changes = stmt.run(discordId, steamId, guildId);
     return changes > 0;
+  }
+
+  get(guildId: string): (ConnectionRow & { fetched: number })[] {
+    const stmt = this.db.prepare(
+      "SELECT * FROM connections WHERE guild_id = ?",
+    );
+    return stmt.all<ConnectionRow & { fetched: number }>(guildId);
+  }
+
+  fetchNew(guildId: string): (ConnectionRow)[] {
+    const stmt = this.db.prepare(
+      "UPDATE connections SET fetched = 1 WHERE guild_id = ? AND fetched = 0 RETURNING *",
+    );
+    return stmt.all<ConnectionRow>(guildId);
   }
 
   delete(discordId: string, guildId: string): boolean {
@@ -57,11 +77,11 @@ export class ConnectionsModel {
     return changes > 0;
   }
 
-  getAllByDiscordId(discordId: string): ConnectionRow[] {
+  getAllByDiscordId(discordId: string): (ConnectionRow & { guild_id: string })[] {
     const stmt = this.db.prepare(
       "SELECT discord_id, steam_id, guild_id, created_at FROM connections WHERE discord_id = ?",
     );
-    return stmt.all<ConnectionRow>(discordId);
+    return stmt.all<ConnectionRow & { guild_id: string }>(discordId);
   }
 
   getDiscordId(steamId: string, guildId: string): string | null {
