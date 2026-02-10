@@ -84,6 +84,13 @@ export class ConnectionsModel {
     return stmt.all<Connection & { guild_id: string }>(discordId);
   }
 
+  getAllBySteamId(steamId: string): (Connection & { guild_id: string })[] {
+    const stmt = this.db.prepare(
+      "SELECT discord_id, steam_id, guild_id, created_at FROM connections WHERE steam_id = ?",
+    );
+    return stmt.all<Connection & { guild_id: string }>(steamId);
+  }
+
   getDiscordId(steamId: string, guildId: string): string | null {
     const stmt = this.db.prepare(
       "SELECT discord_id FROM connections WHERE steam_id = ? AND guild_id = ?",

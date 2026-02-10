@@ -6,7 +6,11 @@ import { db } from "../../../db/service.ts";
 import { config } from "../../../config.ts";
 
 const GetConnectionsSchema = z.object({
-  discordId: z.string().regex(/^\d+$/),
+  discordId: z.string().regex(/^\d+$/).optional(),
+  steamId: z.string().regex(/^\d+$/).optional(),
+  guildId: z.string().regex(/^\d+$/).optional(),
+}).refine((data) => (!!data.discordId !== !!data.steamId), {
+  message: "Provide strictly one: discordId OR steamId",
 });
 
 const DeleteConnectionsSchema = z.object({
@@ -16,10 +20,24 @@ const DeleteConnectionsSchema = z.object({
 
 export default new Hono()
   .use(bearerAuth({ token: config.apiKey }))
-  .get("/:discordId", zValidator("param", GetConnectionsSchema), (c) => {
-    const { discordId } = c.req.valid("param");
-    const connections = db.connections.getAllByDiscordId(discordId);
+  .get("/", zValidator("query", GetConnectionsSchema), (c) => {
+    const { discordId, steamId, guildId } = c.req.valid("query");
 
+    if (discordId) {
+      if (guildId) {
+        const s = db.connections.getSteamId(discordId, guildId);
+        return c.json({ steamId: s }, 200);
+      }
+      const connections = db.connections.getAllByDiscordId(discordId);
+      return c.json({ connections }, 200);
+    }
+
+    if (guildId) {
+      const d = db.connections.getDiscordId(steamId!, guildId);
+      return c.json({ discordId: d }, 200);
+    }
+
+    const connections = db.connections.getAllBySteamId(steamId!);
     return c.json({ connections }, 200);
   })
   .delete("/", zValidator("json", DeleteConnectionsSchema), (c) => {
