@@ -13,7 +13,7 @@ export interface ServerCodeRow {
   created_at: string;
 }
 
-export interface ConnectionRow {
+export interface Connection {
   discord_id: string;
   steam_id: string;
   created_at: string;

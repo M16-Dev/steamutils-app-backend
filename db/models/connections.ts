@@ -1,5 +1,5 @@
 import { Database } from "@db/sqlite";
-import { ConnectionRow } from "../types.ts";
+import { Connection } from "../types.ts";
 
 export class ConnectionsModel {
   constructor(private db: Database) {
@@ -31,18 +31,18 @@ export class ConnectionsModel {
     return changes > 0;
   }
 
-  get(guildId: string): (ConnectionRow & { fetched: number })[] {
+  get(guildId: string): (Connection & { fetched: number })[] {
     const stmt = this.db.prepare(
       "SELECT * FROM connections WHERE guild_id = ?",
     );
-    return stmt.all<ConnectionRow & { fetched: number }>(guildId);
+    return stmt.all<Connection & { fetched: number }>(guildId);
   }
 
-  fetchNew(guildId: string): (ConnectionRow)[] {
+  fetchNew(guildId: string): (Connection)[] {
     const stmt = this.db.prepare(
       "UPDATE connections SET fetched = 1 WHERE guild_id = ? AND fetched = 0 RETURNING *",
     );
-    return stmt.all<ConnectionRow>(guildId);
+    return stmt.all<Connection>(guildId);
   }
 
   delete(discordId: string, guildId: string): boolean {
@@ -77,11 +77,11 @@ export class ConnectionsModel {
     return changes > 0;
   }
 
-  getAllByDiscordId(discordId: string): (ConnectionRow & { guild_id: string })[] {
+  getAllByDiscordId(discordId: string): (Connection & { guild_id: string })[] {
     const stmt = this.db.prepare(
       "SELECT discord_id, steam_id, guild_id, created_at FROM connections WHERE discord_id = ?",
     );
-    return stmt.all<ConnectionRow & { guild_id: string }>(discordId);
+    return stmt.all<Connection & { guild_id: string }>(discordId);
   }
 
   getDiscordId(steamId: string, guildId: string): string | null {
