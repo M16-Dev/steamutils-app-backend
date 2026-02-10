@@ -3,5 +3,6 @@
     "free": {
       "maxCodesPerGuild": 1
     }
-  }
+  },
+  "maxTokensPerGuild": 3
 }

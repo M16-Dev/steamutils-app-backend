@@ -11,10 +11,6 @@ export const rawConfig = {
   botApiKey: Deno.env.get("BOT_API_KEY") as string | undefined,
 };
 
-if (!rawConfig.plans.free) {
-  rawConfig.plans.free = { maxCodesPerGuild: 1 };
-}
-
 const PlanSchema = z.object({
   maxCodesPerGuild: z.number().int().positive(),
 });
@@ -27,6 +23,7 @@ const ConfigSchema = z.object({
   plans: z.record(z.string(), PlanSchema),
   botApiUrl: z.url().regex(/^https?:\/\/.+/),
   botApiKey: z.string().min(1),
+  maxTokensPerGuild: z.number().int().positive(),
 });
 
 const parsed = ConfigSchema.safeParse(rawConfig);
